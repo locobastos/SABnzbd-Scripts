@@ -75,9 +75,9 @@
 
 #_____VAR___________________________________________________________________________________________
 
-LOG="/usr/local/sabnzbd/var/scripts/RenameMove.log"
-HISTORY="/volume1/downloads/complete/RenameMoveHistory.log"
+LOG="/usr/local/sabnzbd/var/scripts/MoveRename.log"
 DIRECTORY="/volume1/downloads/complete"
+HISTORY="$DIRECTORY/MoveRenameHistory.log"
 
 SCRIPT_NAME=$0
 FULL_JOB_DIRECTORY=$1
@@ -87,25 +87,33 @@ INDEXER_REPORT_NUMBER=$4
 USER_DEFINED_CATEGORY=$5
 NZB_GROUP=$6
 STATUS_POST_PROCESSING=$7
-URL_FAILED_JOB FAILED=$8
-FILE_COUNT=1
+URL_FAILED_JOB_FAILED=$8
 
 #_____BEGIN_________________________________________________________________________________________
 
 echo "---------- BEGIN ----------" >> $LOG
 cd "$FULL_JOB_DIRECTORY"
 
-echo `date "+%d.%m.%Y %H:%M:%S"` "---I--- : ROOT Folder :" `pwd` >> $LOG
-
-for F in "$DIRECTORY"/*.*
+for F in "$FULL_JOB_DIRECTORY"/*.*
 do
     echo `date "+%d.%m.%Y %H:%M:%S"` "---I--- : Current folder :" `pwd` >> $LOG
-    
-    FOLDER_NAME=`basename "$PWD"`
-    FILE_COUNT=$((FILE_COUNT+1))
-    FILE_EXT="${F##*.}"
 
-    mv ${F} ../$FOLDER_NAME_$FILE_COUNT.$FILE_EXT
+        FOLDER_NAME=`basename "$PWD"`
+    FILE_EXT="${F##*.}"
+        FILENAME=`basename $F $FILE_EXT`
+
+    echo `date "+%d.%m.%Y %H:%M:%S"` "---I--- : FOLDER_NAME :" $FOLDER_NAME >> $LOG
+        echo `date "+%d.%m.%Y %H:%M:%S"` "---I--- : FILENAME :" $FILENAME >> $LOG
+    echo `date "+%d.%m.%Y %H:%M:%S"` "---I--- : FILE_EXT :" $FILE_EXT >> $LOG
+
+        if [ ! -f "../$FOLDER_NAME.$FILE_EXT" ]
+        then
+                mv "${F}" "../$FOLDER_NAME.$FILE_EXT"
+                echo `date "+%d.%m.%Y %H:%M:%S"` "---I--- : Moved '${F}' to '../$FOLDER_NAME.$FILE_EXT'" >> $LOG
+        else
+                mv "${F}" "../$FOLDER_NAME-$FILENAME$FILE_EXT"
+                echo `date "+%d.%m.%Y %H:%M:%S"` "---I--- : Moved '${F}' to '../$FOLDER_NAME-$FILENAME$FILE_EXT'" >> $LOG
+        fi
 done
 
 #_____END__________________________________________________________________________________________
